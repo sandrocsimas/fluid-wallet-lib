@@ -1,6 +1,6 @@
 {
   "address_types": {
-    "mainnet": {
+    "bitcoin": {
       "p2pkh": {
         "prefixes": ["1"],
         "derivationPath": "m/44'/0'/0'/0/0",
