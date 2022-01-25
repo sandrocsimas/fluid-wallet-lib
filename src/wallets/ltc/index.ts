@@ -1,0 +1,11 @@
+import ltcConfig from './ltc-config';
+
+import BTCBasedWallet from '../btc-based-wallet';
+
+import walletConfig from '../../models/wallet-config';
+
+export default class LTCWallet extends BTCBasedWallet {
+  protected getWalletConfig(): walletConfig {
+    return ltcConfig;
+  }
+}

@@ -12,11 +12,7 @@
   },
   "extends": [
     "airbnb-base",
-    "airbnb-typescript/base",
-    "plugin:mocha/recommended"
-  ],
-  "plugins": [
-    "mocha"
+    "airbnb-typescript/base"
   ],
   "parserOptions": {
     "project": "./tsconfig.json"
