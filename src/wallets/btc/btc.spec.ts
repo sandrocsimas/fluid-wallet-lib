@@ -1,31 +1,37 @@
 /* eslint-disable prefer-arrow-callback, func-names */
 
-import Config from '../../config';
 import BTCWallet from '.';
 
-const config = new Config({ network: 'testnet' });
+import { WalletEnvConfig } from '../../models/env-config';
 
-describe('btc', function () {
+import BlockchainInfoProvider from '../../providers/blockchain-info';
+
+const network = 'testnet';
+const walletEnvConfig: WalletEnvConfig = {
+  provider: new BlockchainInfoProvider(),
+};
+
+describe('BTCWallet', function () {
   describe('#createWallet()', function () {
     it('should create a native segwit address by default', async function () {
-      const wallet = await new BTCWallet(config).createWallet();
+      const wallet = await new BTCWallet(network, walletEnvConfig).createWallet();
       console.log(wallet);
     });
 
     it('should create a legacy address when p2pkh is passed as parameter', async function () {
-      const wallet = await new BTCWallet(config).createWallet('p2pkh');
+      const wallet = await new BTCWallet(network, walletEnvConfig).createWallet('p2pkh');
       console.log(wallet);
     });
   });
 
   describe('#importWallet()', function () {
     it('should import a native segwit address by default', async function () {
-      const wallet = await new BTCWallet(config).importWallet('front curious kingdom replace picnic silver agent sound cinnamon scheme assault clock');
+      const wallet = await new BTCWallet(network, walletEnvConfig).importWallet('front curious kingdom replace picnic silver agent sound cinnamon scheme assault clock');
       console.log(wallet);
     });
 
     it('should import a legacy address when p2pkh is passed as parameter', async function () {
-      const wallet = await new BTCWallet(config).importWallet('front curious kingdom replace picnic silver agent sound cinnamon scheme assault clock', 'p2pkh');
+      const wallet = await new BTCWallet(network, walletEnvConfig).importWallet('front curious kingdom replace picnic silver agent sound cinnamon scheme assault clock', 'p2pkh');
       console.log(wallet);
     });
   });
@@ -52,7 +58,7 @@ describe('btc', function () {
   //         value: 1239977400,
   //       },
   //     ];
-  //     const transaction = await new BTCWallet(config).createTransaction(fromAddress, privateKey, inputs, outputs);
+  //     const transaction = await new BTCWallet(network, walletEnvConfig).createTransaction(fromAddress, privateKey, inputs, outputs);
   //     console.log(transaction);
   //   });
   // });

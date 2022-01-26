@@ -10,11 +10,12 @@ import BIP32Factory from 'bip32';
 import * as bip39 from 'bip39';
 import * as ecc from 'tiny-secp256k1';
 
+import mnemonicWords from './mnemonic-words.json';
+
 import BaseWallet from './base-wallet';
+
 import Wallet from '../models/wallet';
-import Transaction from '../models/transaction';
-import Input from '../models/input';
-import Output from '../models/output';
+import { Transaction, Input, Output } from '../models/transaction';
 
 export default abstract class BTCBasedWallet extends BaseWallet {
   private bip32Factory = BIP32Factory(ecc);
@@ -22,7 +23,7 @@ export default abstract class BTCBasedWallet extends BaseWallet {
   private ecPairFactory = ECPairFactory(ecc);
 
   public async createWallet(addressFormat?: string): Promise<Wallet> {
-    const mnemonic = bip39.generateMnemonic();
+    const mnemonic = bip39.generateMnemonic(undefined, undefined, mnemonicWords);
     return this.getWalletDetails(mnemonic, addressFormat);
   }
 
@@ -70,16 +71,16 @@ export default abstract class BTCBasedWallet extends BaseWallet {
 
     const tx = psbt.extractTransaction();
     return {
-      id: tx.getId(),
+      hash: tx.getId(),
       hex: tx.toHex(),
     };
   }
 
   private getNetwork(): Network {
     // eslint-disable-next-line prefer-destructuring
-    const network = this.getWalletConfig().networks[this.config.network];
+    const network = this.getWalletConfig().networks[this.network];
     if (!network) {
-      throw new Error(`Network ${this.config.network} is not supported`);
+      throw new Error(`Network ${this.network} is not supported`);
     }
     return network;
   }

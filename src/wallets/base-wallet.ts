@@ -1,14 +1,15 @@
 import Wallet from '../models/wallet';
 import WalletConfig, { AddressFormat } from '../models/wallet-config';
-import Transaction from '../models/transaction';
-import Input from '../models/input';
-import Output from '../models/output';
-import Config from '../config';
+import { WalletEnvConfig } from '../models/env-config';
+import { Transaction, Input, Output } from '../models/transaction';
 
 export default abstract class BaseWallet {
-  config: Config;
+  protected network: string;
 
-  constructor(config: Config) {
+  protected config: WalletEnvConfig;
+
+  public constructor(network: string, config: WalletEnvConfig) {
+    this.network = network;
     this.config = config;
   }
 
@@ -29,7 +30,7 @@ export default abstract class BaseWallet {
   protected abstract getWalletConfig(): WalletConfig;
 
   protected getDerivationPath(addressFormat: string): string {
-    const addressFormats = this.getWalletConfig().address_formats[this.config.network];
+    const addressFormats = this.getWalletConfig().address_formats[this.network];
     const addressFormatConfig = addressFormats[addressFormat];
     if (!addressFormatConfig) {
       throw new Error(`Address format ${addressFormat} is not supported`);
@@ -38,7 +39,7 @@ export default abstract class BaseWallet {
   }
 
   protected getAddressFormat(address: string): string {
-    const addressFormats = this.getWalletConfig().address_formats[this.config.network];
+    const addressFormats = this.getWalletConfig().address_formats[this.network];
     const addressFormat = Object.keys(addressFormats).find((addressFormatKey) => addressFormats[addressFormatKey].prefixes.some((prefix) => address.startsWith(prefix)));
     if (!addressFormat) {
       throw new Error('Address format not supported');
@@ -48,6 +49,6 @@ export default abstract class BaseWallet {
 
   protected getAddressFormatConfig(address: string): AddressFormat {
     const addressFormat = this.getAddressFormat(address);
-    return this.getWalletConfig().address_formats[this.config.network][addressFormat];
+    return this.getWalletConfig().address_formats[this.network][addressFormat];
   }
 }

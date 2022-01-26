@@ -1,21 +1,23 @@
 /* eslint-disable prefer-arrow-callback, func-names */
 
-import Config from '../../config';
 import ETHWallet from '.';
 
-const config = new Config({ network: 'testnet' });
+import { WalletEnvConfig } from '../../models/env-config';
 
-describe('eth', function () {
+const network = 'testnet';
+const walletEnvConfig: WalletEnvConfig = {};
+
+describe('ETHWallet', function () {
   describe('#createWallet()', function () {
     it('should create a address', async function () {
-      const wallet = await new ETHWallet(config).createWallet();
+      const wallet = await new ETHWallet(network, walletEnvConfig).createWallet();
       console.log(wallet);
     });
   });
 
   describe('#importWallet()', function () {
     it('should import a address', async function () {
-      const wallet = await new ETHWallet(config).importWallet('front curious kingdom replace picnic silver agent sound cinnamon scheme assault clock');
+      const wallet = await new ETHWallet(network, walletEnvConfig).importWallet('front curious kingdom replace picnic silver agent sound cinnamon scheme assault clock');
       console.log(wallet);
     });
   });
