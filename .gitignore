@@ -1,2 +1,6 @@
+# Folders
 build_test
 node_modules
+
+# Files
+lib/tsconfig.json
