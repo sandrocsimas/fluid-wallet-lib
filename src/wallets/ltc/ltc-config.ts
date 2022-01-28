@@ -2,7 +2,7 @@ import WalletConfig from '../../models/wallet-config';
 
 const config: WalletConfig = {
   name: 'Litecoin',
-  symbol: 'LTC',
+  symbol: 'ltc',
   networks: {
     mainnet: {
       messagePrefix: '\x19Litecoin Signed Message:\n',

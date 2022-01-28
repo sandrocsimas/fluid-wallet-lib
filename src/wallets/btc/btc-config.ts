@@ -2,7 +2,7 @@ import WalletConfig from '../../models/wallet-config';
 
 const config: WalletConfig = {
   name: 'Bitcoin',
-  symbol: 'BTC',
+  symbol: 'btc',
   networks: {
     mainnet: {
       messagePrefix: '\x18Bitcoin Signed Message:\n',

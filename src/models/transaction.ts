@@ -3,7 +3,7 @@ export interface Transaction {
   hex: string;
 }
 
-export interface Input {
+export interface UnspentTransaction {
   hash: string;
   vout: number;
   value: number;

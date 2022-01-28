@@ -2,7 +2,7 @@ import WalletConfig from '../../models/wallet-config';
 
 const config: WalletConfig = {
   name: 'Ethereum',
-  symbol: 'ETH',
+  symbol: 'eth',
   networks: {},
   address_formats: {
     mainnet: {

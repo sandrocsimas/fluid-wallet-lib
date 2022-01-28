@@ -1,16 +1,16 @@
 import { ethers } from 'ethers';
 
 import ethConfig from './eth-config';
-import LibWordList from './word-list';
+import MnemonicWords from './mnemonic-words';
 
 import BaseWallet from '../base-wallet';
 
 import Wallet from '../../models/wallet';
 import WalletConfig from '../../models/wallet-config';
-import { Transaction, Input, Output } from '../../models/transaction';
+import { Transaction } from '../../models/transaction';
 
 export default class ETHWallet extends BaseWallet {
-  public wordList = new LibWordList();
+  public mnemonicWords = new MnemonicWords();
 
   public async createWallet(addressFormat = 'eth'): Promise<Wallet> {
     const derivationPath = this.getDerivationPath(addressFormat);
@@ -20,11 +20,12 @@ export default class ETHWallet extends BaseWallet {
 
   public async importWallet(mnemonic: string, addressFormat = 'eth'): Promise<Wallet> {
     const derivationPath = this.getDerivationPath(addressFormat);
-    const wallet = ethers.Wallet.fromMnemonic(mnemonic, derivationPath, this.wordList);
+    const wallet = ethers.Wallet.fromMnemonic(mnemonic, derivationPath, this.mnemonicWords);
     return this.getWalletDetails(wallet, addressFormat);
   }
 
-  public async createTransaction(fromAddress: string, privateKey: string, inputs: [Input], outputs: [Output]): Promise<Transaction> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public send(fromAddress: string, toAddess: string, changeAddress: string | undefined, privateKey: string, amount: number): Promise<Transaction> {
     throw new Error('Method not implemented.');
   }
 

@@ -1,7 +1,8 @@
 import { Wordlist } from 'ethers';
+
 import mnemonicWords from '../mnemonic-words.json';
 
-export default class LibWordList extends Wordlist {
+export default class MnemonicWords extends Wordlist {
   public constructor() {
     super('en');
   }

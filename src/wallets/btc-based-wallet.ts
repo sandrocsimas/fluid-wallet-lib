@@ -9,13 +9,21 @@ import ECPairFactory from 'ecpair';
 import BIP32Factory from 'bip32';
 import * as bip39 from 'bip39';
 import * as ecc from 'tiny-secp256k1';
+import * as unit from 'satoshi-bitcoin';
+import * as coinSelect from 'coinselect';
 
 import mnemonicWords from './mnemonic-words.json';
 
 import BaseWallet from './base-wallet';
 
 import Wallet from '../models/wallet';
-import { Transaction, Input, Output } from '../models/transaction';
+import { Transaction, Output, UnspentTransaction } from '../models/transaction';
+
+interface TransactionParams {
+  inputs: UnspentTransaction[],
+  outputs: Output[],
+  fee: number,
+}
 
 export default abstract class BTCBasedWallet extends BaseWallet {
   private bip32Factory = BIP32Factory(ecc);
@@ -35,7 +43,7 @@ export default abstract class BTCBasedWallet extends BaseWallet {
     return this.getWalletDetails(mnemonic, addressFormat);
   }
 
-  public async createTransaction(fromAddress: string, privateKey: string, inputs: Input[], outputs: Output[]): Promise<Transaction> {
+  public async send(fromAddress: string, toAddess: string, changeAddress: string | undefined, privateKey: string, amount: number): Promise<Transaction> {
     const network = this.getNetwork();
     const keyPair = this.ecPairFactory.fromWIF(privateKey, network);
 
@@ -43,7 +51,9 @@ export default abstract class BTCBasedWallet extends BaseWallet {
 
     const addressFormat = this.getAddressFormat(fromAddress);
     const addressFormatConfig = this.getAddressFormatConfig(fromAddress);
-    await Promise.all(inputs.map(async (input: any) => {
+
+    const { inputs, outputs } = await this.getTransactionParams(fromAddress, toAddess, changeAddress, amount);
+    await Promise.all(inputs.map(async (input) => {
       const psbtInput: any = {
         hash: input.hash,
         index: input.vout,
@@ -54,7 +64,8 @@ export default abstract class BTCBasedWallet extends BaseWallet {
           value: input.value,
         };
       } else {
-        psbtInput.nonWitnessUtxo = Buffer.from(input.raw, 'hex');
+        const tx = await this.getProvider().getTransaction(input.hash);
+        psbtInput.nonWitnessUtxo = Buffer.from(tx.hex, 'hex');
       }
       psbt.addInput(psbtInput);
     }));
@@ -87,7 +98,7 @@ export default abstract class BTCBasedWallet extends BaseWallet {
 
   private getScriptPubKey(publicKey: Buffer, addressFormat: string): Payment {
     // eslint-disable-next-line prefer-destructuring
-    const payments: { [key: string]: PaymentCreator } = bitcoin.payments;
+    const payments: { [scriptPubKey: string]: PaymentCreator } = bitcoin.payments;
     const scriptPubKey = payments[addressFormat];
     if (!scriptPubKey) {
       throw new Error(`Script pub key ${addressFormat} is not supported`);
@@ -114,6 +125,34 @@ export default abstract class BTCBasedWallet extends BaseWallet {
       seed: seed.toString('hex'),
       public_key: node.publicKey.toString('hex'),
       private_key: node.toWIF(),
+    };
+  }
+
+  private async getTransactionParams(fromAddress: string, toAddress: string, changeAddress: string | undefined, amount: number): Promise<TransactionParams> {
+    // let estimatedFee = await this.config.provider.('estimatesmartfee', [1]);
+    // if (estimatedFee.errors) {
+    //   if (NETWORK_NAME === 'mainnet') {
+    //     throw new Error('Error estimating fee');
+    //   }
+    //   estimatedFee = {feerate: 0.000001};
+    // }
+
+    // TODO: calculate fee
+    const feeRate = unit.toSatoshi(0.000001);
+    const utxos = await this.getProvider().listUnspent(fromAddress);
+    const target = {
+      address: toAddress,
+      value: unit.toSatoshi(amount),
+    };
+
+    const { inputs, outputs, fee } = coinSelect(utxos, [target], feeRate);
+    if (!inputs || !outputs) {
+      throw new Error('No inputs or outputs provided to create the transaction');
+    }
+    return {
+      fee,
+      inputs,
+      outputs: outputs.map((output: Output) => (output.address ? output : { address: changeAddress || fromAddress, value: output.value })),
     };
   }
 }

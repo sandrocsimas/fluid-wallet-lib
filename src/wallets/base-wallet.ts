@@ -1,17 +1,25 @@
 import Wallet from '../models/wallet';
 import WalletConfig, { AddressFormat } from '../models/wallet-config';
-import { WalletEnvConfig } from '../models/env-config';
-import { Transaction, Input, Output } from '../models/transaction';
+import { Transaction } from '../models/transaction';
+
+import BaseProvider from '../providers/base-provider';
 
 export default abstract class BaseWallet {
-  protected network: string;
+  public readonly network: string;
 
-  protected config: WalletEnvConfig;
+  private provider!: BaseProvider;
 
-  public constructor(network: string, config: WalletEnvConfig) {
+  public constructor(network: string) {
     this.network = network;
-    this.config = config;
   }
+
+  public abstract createWallet(addressFormat?: string): Promise<Wallet>;
+
+  public abstract importWallet(mnemonic: string, addressFormat?: string): Promise<Wallet>;
+
+  public abstract send(fromAddress: string, toAddess: string, changeAddress: string | undefined, privateKey: string, amount: number): Promise<Transaction>;
+
+  protected abstract getWalletConfig(): WalletConfig;
 
   public getName(): string {
     return this.getWalletConfig().name;
@@ -21,13 +29,29 @@ export default abstract class BaseWallet {
     return this.getWalletConfig().symbol;
   }
 
-  public abstract createWallet(addressFormat?: string): Promise<Wallet>;
+  public async connect(provider: BaseProvider): Promise<void> {
+    if (provider.symbol !== this.getSymbol()) {
+      throw new Error('Provider was created for another crypto');
+    }
+    if (provider.network !== this.network) {
+      throw new Error('Provider was created for another network');
+    }
+    if (!provider.isConnected()) {
+      await provider.connect();
+    }
+    this.provider = provider;
+  }
 
-  public abstract importWallet(mnemonic: string, addressFormat?: string): Promise<Wallet>;
+  public isConnected(): boolean {
+    return this.provider && this.provider.isConnected();
+  }
 
-  public abstract createTransaction(fromAddress: string, privateKey: string, inputs: [Input], outputs: [Output]): Promise<Transaction>;
-
-  protected abstract getWalletConfig(): WalletConfig;
+  protected getProvider(): BaseProvider {
+    if (!this.provider) {
+      throw new Error('Provider is not connected');
+    }
+    return this.provider;
+  }
 
   protected getDerivationPath(addressFormat: string): string {
     const addressFormats = this.getWalletConfig().address_formats[this.network];
