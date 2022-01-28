@@ -24,7 +24,6 @@ export default class ETHWallet extends BaseWallet {
     return this.getWalletDetails(wallet, addressFormat);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public send(fromAddress: string, toAddess: string, changeAddress: string | undefined, privateKey: string, amount: number): Promise<Transaction> {
     throw new Error('Method not implemented.');
   }
