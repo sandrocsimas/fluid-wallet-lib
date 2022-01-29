@@ -15,7 +15,7 @@ export default class ElectrumProvider extends BaseProvider {
     protected doGetBalance(address: string): Promise<Balance>;
     protected doGetTransaction(hash: string): Promise<Transaction>;
     protected doListUnspent(address: string): Promise<UnspentTransaction[]>;
-    protected doBroadcastTransaction(transaction: Transaction): Promise<void>;
+    protected doBroadcastTransaction(transaction: Transaction): Promise<Transaction>;
     private getScriptHash;
     private rpcRequest;
 }

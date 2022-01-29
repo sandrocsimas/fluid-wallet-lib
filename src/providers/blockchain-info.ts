@@ -6,6 +6,10 @@ import Balance from '../models/balance';
 import { Transaction, UnspentTransaction } from '../models/transaction';
 
 export default class BlockchainInfoProvider extends BaseProvider {
+  public constructor(symbol: string, network: string) {
+    super(symbol, network);
+  }
+
   protected isSupportedBlockchain(symbol: string, network: string): boolean {
     return symbol === 'btc' && network === 'mainnet';
   }
@@ -17,7 +21,7 @@ export default class BlockchainInfoProvider extends BaseProvider {
   protected async doGetBalance(address: string): Promise<Balance> {
     const { data } = await axios.get(`https://blockchain.info/balance?active=${address}`);
     return {
-      value: data[address].final_balance,
+      value: String(data[address].final_balance),
     };
   }
 
@@ -38,7 +42,8 @@ export default class BlockchainInfoProvider extends BaseProvider {
     }));
   }
 
-  protected async doBroadcastTransaction(transaction: Transaction): Promise<void> {
+  protected async doBroadcastTransaction(transaction: Transaction): Promise<Transaction> {
     await axios.post(`https://blockchain.info/pushtx?tx=${transaction.hex}`);
+    return transaction;
   }
 }

@@ -8,7 +8,7 @@ export default abstract class BaseProvider {
 
   private connected = false;
 
-  public constructor(symbol: string, network: string) {
+  protected constructor(symbol: string, network: string) {
     this.symbol = symbol;
     this.network = network;
     if (!this.isSupportedBlockchain(symbol, network)) {
@@ -26,7 +26,7 @@ export default abstract class BaseProvider {
 
   protected abstract doListUnspent(address: string): Promise<UnspentTransaction[]>;
 
-  protected abstract doBroadcastTransaction(transaction: Transaction): Promise<void>;
+  protected abstract doBroadcastTransaction(transaction: Transaction): Promise<Transaction>;
 
   public isConnected(): boolean {
     return this.connected;
@@ -55,7 +55,7 @@ export default abstract class BaseProvider {
     return this.doListUnspent(address);
   }
 
-  public broadcastTransaction(transaction: Transaction): Promise<void> {
+  public broadcastTransaction(transaction: Transaction): Promise<Transaction> {
     this.assertConnected();
     return this.doBroadcastTransaction(transaction);
   }

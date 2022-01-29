@@ -13,6 +13,10 @@ export default class BlockCypherProvider extends BaseProvider {
     ltc: { mainnet: 'ltc/main' },
   };
 
+  public constructor(symbol: string, network: string) {
+    super(symbol, network);
+  }
+
   public isSupportedBlockchain(symbol: string, network: string): boolean {
     return !!BlockCypherProvider.BLOCKCHAIN_PATHS[symbol][network];
   }
@@ -25,7 +29,7 @@ export default class BlockCypherProvider extends BaseProvider {
     const networkPath = BlockCypherProvider.BLOCKCHAIN_PATHS[this.symbol][this.network];
     const { data } = await axios.get(`https://api.blockcypher.com/v1/${networkPath}/addrs/${address}/balance`);
     return {
-      value: data.final_balance,
+      value: String(data.final_balance),
     };
   }
 
@@ -48,8 +52,9 @@ export default class BlockCypherProvider extends BaseProvider {
     }));
   }
 
-  protected async doBroadcastTransaction(transaction: Transaction): Promise<void> {
+  protected async doBroadcastTransaction(transaction: Transaction): Promise<Transaction> {
     const networkPath = BlockCypherProvider.BLOCKCHAIN_PATHS[this.symbol][this.network];
     await axios.post(`https://api.blockcypher.com/v1/${networkPath}/txs/push`, { tx: transaction.hex });
+    return transaction;
   }
 }

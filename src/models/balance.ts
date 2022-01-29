@@ -1,3 +1,3 @@
 export default interface Balance {
-  value: number;
+  value: string;
 }

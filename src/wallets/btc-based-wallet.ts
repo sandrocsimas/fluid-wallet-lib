@@ -18,6 +18,7 @@ import BaseWallet from './base-wallet';
 
 import Wallet from '../models/wallet';
 import { Transaction, Output, UnspentTransaction } from '../models/transaction';
+import { AddressFormat } from '../models/wallet-config';
 
 interface TransactionParams {
   inputs: UnspentTransaction[],
@@ -43,14 +44,13 @@ export default abstract class BTCBasedWallet extends BaseWallet {
     return this.getWalletDetails(mnemonic, addressFormat);
   }
 
-  public async send(fromAddress: string, toAddess: string, changeAddress: string | undefined, privateKey: string, amount: number): Promise<Transaction> {
+  public async send(privateKey: string, fromAddress: string, toAddess: string, changeAddress: string | undefined, amount: string): Promise<Transaction> {
     const network = this.getNetwork();
     const keyPair = this.ecPairFactory.fromWIF(privateKey, network);
 
     const psbt = new Psbt({ network });
 
     const addressFormat = this.getAddressFormat(fromAddress);
-    const addressFormatConfig = this.getAddressFormatConfig(fromAddress);
 
     const { inputs, outputs } = await this.getTransactionParams(fromAddress, toAddess, changeAddress, amount);
     await Promise.all(inputs.map(async (input) => {
@@ -58,7 +58,7 @@ export default abstract class BTCBasedWallet extends BaseWallet {
         hash: input.hash,
         index: input.vout,
       };
-      if (addressFormatConfig.witness) {
+      if (this.isWitness(addressFormat)) {
         psbtInput.witnessUtxo = {
           script: this.getScriptPubKey(keyPair.publicKey, addressFormat).output,
           value: input.value,
@@ -81,10 +81,10 @@ export default abstract class BTCBasedWallet extends BaseWallet {
     psbt.finalizeAllInputs();
 
     const tx = psbt.extractTransaction();
-    return {
+    return this.getProvider().broadcastTransaction({
       hash: tx.getId(),
       hex: tx.toHex(),
-    };
+    });
   }
 
   private getNetwork(): Network {
@@ -94,6 +94,24 @@ export default abstract class BTCBasedWallet extends BaseWallet {
       throw new Error(`Network ${this.network} is not supported`);
     }
     return network;
+  }
+
+  private getDerivationPath(addressFormat: string): string {
+    const addressFormats = this.getWalletConfig().address_formats[this.network];
+    const addressFormatConfig = addressFormats[addressFormat];
+    if (!addressFormatConfig) {
+      throw new Error(`Address format ${addressFormat} is not supported`);
+    }
+    return addressFormatConfig.derivationPath;
+  }
+
+  private getAddressFormat(address: string): string {
+    const addressFormats = this.getWalletConfig().address_formats[this.network];
+    const addressFormat = Object.keys(addressFormats).find((addressFormatKey) => addressFormats[addressFormatKey].prefixes.some((prefix) => address.startsWith(prefix)));
+    if (!addressFormat) {
+      throw new Error('Address format not supported');
+    }
+    return addressFormat;
   }
 
   private getScriptPubKey(publicKey: Buffer, addressFormat: string): Payment {
@@ -107,6 +125,10 @@ export default abstract class BTCBasedWallet extends BaseWallet {
       network: this.getNetwork(),
       pubkey: publicKey,
     });
+  }
+
+  private isWitness(addressFormat: string): boolean {
+    return addressFormat === 'p2wpkh';
   }
 
   private validateInputSignature(publicKey: Buffer, msgHash: Buffer, signature: Buffer): boolean {
@@ -128,7 +150,7 @@ export default abstract class BTCBasedWallet extends BaseWallet {
     };
   }
 
-  private async getTransactionParams(fromAddress: string, toAddress: string, changeAddress: string | undefined, amount: number): Promise<TransactionParams> {
+  private async getTransactionParams(fromAddress: string, toAddress: string, changeAddress: string | undefined, amount: string): Promise<TransactionParams> {
     // let estimatedFee = await this.config.provider.('estimatesmartfee', [1]);
     // if (estimatedFee.errors) {
     //   if (NETWORK_NAME === 'mainnet') {

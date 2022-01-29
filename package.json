@@ -9,7 +9,7 @@
   "scripts": {
     "build": "npx rimraf lib && tsc --build src && tsc --build test && npx rimraf lib/tsconfig.tsbuildinfo",
     "lint": "eslint .",
-    "test": "mocha --recursive --require test/ts-node-register --extensions ts test/**/*.spec.ts"
+    "test": "cd test && mocha --recursive --require ts-node/register --extensions ts **/*.spec.ts"
   },
   "repository": {
     "type": "git",

@@ -7,7 +7,8 @@ export default class ETHWallet extends BaseWallet {
     mnemonicWords: MnemonicWords;
     createWallet(addressFormat?: string): Promise<Wallet>;
     importWallet(mnemonic: string, addressFormat?: string): Promise<Wallet>;
-    send(fromAddress: string, toAddess: string, changeAddress: string | undefined, privateKey: string, amount: number): Promise<Transaction>;
+    send(privateKey: string, fromAddress: string, toAddess: string, changeAddress: string | undefined, amount: string): Promise<Transaction>;
     protected getWalletConfig(): WalletConfig;
+    private getDerivationPath;
     private getWalletDetails;
 }

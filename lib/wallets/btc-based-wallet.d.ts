@@ -6,9 +6,12 @@ export default abstract class BTCBasedWallet extends BaseWallet {
     private ecPairFactory;
     createWallet(addressFormat?: string): Promise<Wallet>;
     importWallet(mnemonic: string, addressFormat?: string): Promise<Wallet>;
-    send(fromAddress: string, toAddess: string, changeAddress: string | undefined, privateKey: string, amount: number): Promise<Transaction>;
+    send(privateKey: string, fromAddress: string, toAddess: string, changeAddress: string | undefined, amount: string): Promise<Transaction>;
     private getNetwork;
+    private getDerivationPath;
+    private getAddressFormat;
     private getScriptPubKey;
+    private isWitness;
     private validateInputSignature;
     private getWalletDetails;
     private getTransactionParams;

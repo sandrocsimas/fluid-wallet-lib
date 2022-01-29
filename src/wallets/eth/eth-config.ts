@@ -5,14 +5,8 @@ const config: WalletConfig = {
   symbol: 'eth',
   networks: {},
   address_formats: {
-    mainnet: {
-      eth: {
-        prefixes: ['0x'],
-        derivationPath: 'm/44\'/60\'/0\'/0/0',
-      },
-    },
-    testnet: {
-      eth: {
+    all: {
+      default: {
         prefixes: ['0x'],
         derivationPath: 'm/44\'/60\'/0\'/0/0',
       },

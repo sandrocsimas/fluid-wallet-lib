@@ -14,5 +14,4 @@ export default interface WalletConfig {
 export interface AddressFormat {
     prefixes: string[];
     derivationPath: string;
-    witness?: boolean;
 }

@@ -67,8 +67,9 @@ export default class ElectrumProvider extends BaseProvider {
       }));
   }
 
-  protected async doBroadcastTransaction(transaction: Transaction): Promise<void> {
+  protected async doBroadcastTransaction(transaction: Transaction): Promise<Transaction> {
     await this.rpcRequest('blockchain.transaction.broadcast', [transaction.hex]);
+    return transaction;
   }
 
   private getScriptHash(address: string): string {
