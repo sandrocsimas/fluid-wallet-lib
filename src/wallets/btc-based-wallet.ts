@@ -18,7 +18,6 @@ import BaseWallet from './base-wallet';
 
 import Wallet from '../models/wallet';
 import { Transaction, Output, UnspentTransaction } from '../models/transaction';
-import { AddressFormat } from '../models/wallet-config';
 
 interface TransactionParams {
   inputs: UnspentTransaction[],
