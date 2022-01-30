@@ -45,7 +45,7 @@ export default class ElectrumProvider extends BaseProvider {
   protected async doGetBalance(address: string): Promise<Balance> {
     const data = await this.rpcRequest('blockchain.scripthash.get_balance', [this.getScriptHash(address)]);
     return {
-      value: data.confirmed,
+      value: String(data.confirmed),
     };
   }
 
