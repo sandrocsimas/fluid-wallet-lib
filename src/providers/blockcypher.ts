@@ -17,7 +17,7 @@ export default class BlockCypherProvider extends BaseProvider {
     super(symbol, network);
   }
 
-  public isSupportedBlockchain(symbol: string, network: string): boolean {
+  protected isSupportedBlockchain(symbol: string, network: string): boolean {
     return !!BlockCypherProvider.BLOCKCHAIN_PATHS[symbol][network];
   }
 
@@ -26,16 +26,14 @@ export default class BlockCypherProvider extends BaseProvider {
   }
 
   protected async doGetBalance(address: string): Promise<Balance> {
-    const networkPath = BlockCypherProvider.BLOCKCHAIN_PATHS[this.symbol][this.network];
-    const { data } = await axios.get(`https://api.blockcypher.com/v1/${networkPath}/addrs/${address}/balance`);
+    const { data } = await axios.get(`https://api.blockcypher.com/v1/${this.getBlockchainPath()}/addrs/${address}/balance`);
     return {
-      value: String(data.final_balance),
+      value: String(data.balance),
     };
   }
 
   protected async doGetTransaction(hash: string): Promise<Transaction> {
-    const networkPath = BlockCypherProvider.BLOCKCHAIN_PATHS[this.symbol][this.network];
-    const { data } = await axios.get(`https://api.blockcypher.com/v1/${networkPath}/txs/${hash}?includeHex=true`);
+    const { data } = await axios.get(`https://api.blockcypher.com/v1/${this.getBlockchainPath()}/txs/${hash}?includeHex=true`);
     return {
       hash,
       hex: data.hex,
@@ -43,8 +41,7 @@ export default class BlockCypherProvider extends BaseProvider {
   }
 
   protected async doListUnspent(address: string): Promise<UnspentTransaction[]> {
-    const networkPath = BlockCypherProvider.BLOCKCHAIN_PATHS[this.symbol][this.network];
-    const { data } = await axios.get(`https://api.blockcypher.com/v1/${networkPath}/addrs/${address}?unspentOnly=true&limit=2000`);
+    const { data } = await axios.get(`https://api.blockcypher.com/v1/${this.getBlockchainPath()}/addrs/${address}?unspentOnly=true&limit=2000`);
     return data.txrefs.map((utxo: any): UnspentTransaction => ({
       hash: utxo.tx_hash,
       vout: utxo.tx_output_n,
@@ -53,8 +50,11 @@ export default class BlockCypherProvider extends BaseProvider {
   }
 
   protected async doBroadcastTransaction(transaction: Transaction): Promise<Transaction> {
-    const networkPath = BlockCypherProvider.BLOCKCHAIN_PATHS[this.symbol][this.network];
-    await axios.post(`https://api.blockcypher.com/v1/${networkPath}/txs/push`, { tx: transaction.hex });
+    await axios.post(`https://api.blockcypher.com/v1/${this.getBlockchainPath()}/txs/push`, { tx: transaction.hex });
     return transaction;
+  }
+
+  private getBlockchainPath(): string {
+    return BlockCypherProvider.BLOCKCHAIN_PATHS[this.symbol][this.network];
   }
 }
