@@ -1,6 +1,6 @@
 export interface Transaction {
     hash: string;
-    hex: string;
+    raw: string;
 }
 export interface UnspentTransaction {
     hash: string;

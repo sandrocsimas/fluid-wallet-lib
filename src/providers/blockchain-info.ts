@@ -29,7 +29,7 @@ export default class BlockchainInfoProvider extends BaseProvider {
     const { data } = await axios.get(`https://blockchain.info/rawtx/${hash}?format=hex`);
     return {
       hash,
-      hex: data,
+      raw: data,
     };
   }
 
@@ -43,7 +43,7 @@ export default class BlockchainInfoProvider extends BaseProvider {
   }
 
   protected async doBroadcastTransaction(transaction: Transaction): Promise<Transaction> {
-    await axios.post(`https://blockchain.info/pushtx?tx=${transaction.hex}`);
+    await axios.post(`https://blockchain.info/pushtx?tx=${transaction.raw}`);
     return transaction;
   }
 }

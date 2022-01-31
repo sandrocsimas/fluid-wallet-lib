@@ -1,12 +1,14 @@
-import { expect } from 'chai';
-import axios from 'axios';
+import chai, { expect } from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import sinon from 'sinon';
+import axios from 'axios';
 
 import Constants from '../constants';
 
+import BaseProvider from '../../src/providers/base-provider';
 import BlockCypherProvider from '../../src/providers/blockcypher';
 
-import BaseProvider from '../../src/providers/base-provider';
+chai.use(chaiAsPromised);
 
 const ADDRESS = '1BYsmmrrfTQ1qm7KcrSLxnX7SaKQREPYFP';
 
@@ -23,17 +25,17 @@ describe('BlockCypherProvider', function () {
 
   describe('#constructor()', function () {
     it('should support some blockchains', async function () {
-      expect(() => new BlockCypherProvider(Constants.SYMBOL_BTC, Constants.NETWORK_MAINNET)).to.not.throw();
-      expect(() => new BlockCypherProvider(Constants.SYMBOL_BTC, Constants.NETWORK_TESTNET)).to.not.throw();
+      await expect(getProvider(Constants.SYMBOL_BTC, Constants.NETWORK_MAINNET)).to.eventually.be.fulfilled;
+      await expect(getProvider(Constants.SYMBOL_BTC, Constants.NETWORK_TESTNET)).to.eventually.be.fulfilled;
 
-      expect(() => new BlockCypherProvider('dash', Constants.NETWORK_MAINNET)).to.not.throw();
-      expect(() => new BlockCypherProvider('dash', Constants.NETWORK_TESTNET)).to.throw();
+      await expect(getProvider('dash', Constants.NETWORK_MAINNET)).to.eventually.be.fulfilled;
+      await expect(getProvider('dash', Constants.NETWORK_TESTNET)).to.eventually.be.rejectedWith('Blockchain not supported');
 
-      expect(() => new BlockCypherProvider('doge', Constants.NETWORK_MAINNET)).to.not.throw();
-      expect(() => new BlockCypherProvider('doge', Constants.NETWORK_TESTNET)).to.throw();
+      await expect(getProvider('doge', Constants.NETWORK_MAINNET)).to.eventually.be.fulfilled;
+      await expect(getProvider('doge', Constants.NETWORK_TESTNET)).to.eventually.be.rejectedWith('Blockchain not supported');
 
-      expect(() => new BlockCypherProvider('ltc', Constants.NETWORK_MAINNET)).to.not.throw();
-      expect(() => new BlockCypherProvider('ltc', Constants.NETWORK_TESTNET)).to.throw();
+      await expect(getProvider('ltc', Constants.NETWORK_MAINNET)).to.eventually.be.fulfilled;
+      await expect(getProvider('ltc', Constants.NETWORK_TESTNET)).to.eventually.be.rejectedWith('Blockchain not supported');
     });
   });
 
@@ -133,7 +135,7 @@ describe('BlockCypherProvider', function () {
       sinon.assert.calledOnce(mock);
       expect(transaction).to.eql({
         hash: txHash,
-        hex: txHex,
+        raw: txHex,
       });
     });
   });
@@ -212,11 +214,11 @@ describe('BlockCypherProvider', function () {
 
       const provider = await getProvider(Constants.SYMBOL_BTC, Constants.NETWORK_MAINNET);
 
-      const transaction = await provider.broadcastTransaction({ hash: txHash, hex: txHex });
+      const transaction = await provider.broadcastTransaction({ hash: txHash, raw: txHex });
       sinon.assert.calledOnce(mock);
       expect(transaction).to.eql({
         hash: txHash,
-        hex: txHex,
+        raw: txHex,
       });
     });
   });

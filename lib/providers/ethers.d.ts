@@ -11,4 +11,6 @@ export default class EthersProvider extends BaseProvider {
     protected doGetTransaction(hash: string): Promise<Transaction>;
     protected doListUnspent(address: string): Promise<UnspentTransaction[]>;
     protected doBroadcastTransaction(transaction: Transaction): Promise<Transaction>;
+    private getRawTransaction;
+    private getNonEmptyValues;
 }

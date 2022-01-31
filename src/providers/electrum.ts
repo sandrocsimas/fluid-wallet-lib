@@ -53,7 +53,7 @@ export default class ElectrumProvider extends BaseProvider {
     const data = await this.rpcRequest('blockchain.transaction.get', [hash]);
     return {
       hash,
-      hex: data,
+      raw: data,
     };
   }
 
@@ -68,7 +68,7 @@ export default class ElectrumProvider extends BaseProvider {
   }
 
   protected async doBroadcastTransaction(transaction: Transaction): Promise<Transaction> {
-    await this.rpcRequest('blockchain.transaction.broadcast', [transaction.hex]);
+    await this.rpcRequest('blockchain.transaction.broadcast', [transaction.raw]);
     return transaction;
   }
 

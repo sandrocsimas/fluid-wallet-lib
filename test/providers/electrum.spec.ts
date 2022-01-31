@@ -75,7 +75,7 @@ describe('ElectrumProvider', function () {
       sinon.assert.calledOnce(mock);
       expect(transaction).to.eql({
         hash: txHash,
-        hex: txHex,
+        raw: txHex,
       });
     });
   });
@@ -127,11 +127,11 @@ describe('ElectrumProvider', function () {
 
       const provider = await getProvider(Constants.SYMBOL_BTC, Constants.NETWORK_MAINNET);
 
-      const transaction = await provider.broadcastTransaction({ hash: txHash, hex: txHex });
+      const transaction = await provider.broadcastTransaction({ hash: txHash, raw: txHex });
       sinon.assert.calledOnce(mock);
       expect(transaction).to.eql({
         hash: txHash,
-        hex: txHex,
+        raw: txHex,
       });
     });
   });

@@ -32,7 +32,7 @@ export default class ETHWallet extends BaseWallet {
     });
     return this.getProvider().broadcastTransaction({
       hash: '',
-      hex: signedTx,
+      raw: signedTx,
     });
   }
 

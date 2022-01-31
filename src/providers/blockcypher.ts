@@ -36,7 +36,7 @@ export default class BlockCypherProvider extends BaseProvider {
     const { data } = await axios.get(`https://api.blockcypher.com/v1/${this.getBlockchainPath()}/txs/${hash}?includeHex=true`);
     return {
       hash,
-      hex: data.hex,
+      raw: data.hex,
     };
   }
 
@@ -50,7 +50,7 @@ export default class BlockCypherProvider extends BaseProvider {
   }
 
   protected async doBroadcastTransaction(transaction: Transaction): Promise<Transaction> {
-    await axios.post(`https://api.blockcypher.com/v1/${this.getBlockchainPath()}/txs/push`, { tx: transaction.hex });
+    await axios.post(`https://api.blockcypher.com/v1/${this.getBlockchainPath()}/txs/push`, { tx: transaction.raw });
     return transaction;
   }
 

@@ -1,18 +1,25 @@
-import { expect } from 'chai';
+import chai, { expect } from 'chai';
+import chaiAsPromised from 'chai-as-promised';
+import sinon from 'sinon';
 import { ethers } from 'ethers';
 
 import Constants from '../constants';
 
+import BaseProvider from '../../src/providers/base-provider';
 import EthersProvider from '../../src/providers/ethers';
 
-import BaseProvider from '../../src/providers/base-provider';
+chai.use(chaiAsPromised);
 
-const ADDRESS = '0x866c32f1e3543F715c34DE389C17E434a3D773F7';
+const ADDRESS = '0xEA674fdDe714fd979de3EdF0F56AA9716B898ec8';
 
-async function getProvider(network: string): Promise<BaseProvider> {
-  const provider = new EthersProvider(new ethers.providers.EtherscanProvider(network));
+async function getProviders(network: string): Promise<{ provider: BaseProvider, etherscanProvider: ethers.providers.EtherscanProvider }> {
+  const etherscanProvider = new ethers.providers.EtherscanProvider(network);
+  const provider = new EthersProvider(etherscanProvider);
   await provider.connect();
-  return provider;
+  return {
+    provider,
+    etherscanProvider,
+  };
 }
 
 describe('EthersProvider', function () {
@@ -20,41 +27,81 @@ describe('EthersProvider', function () {
 
   describe('#constructor()', function () {
     it('should support only Bitcoin\'s mainnet blockchain', async function () {
-      // expect(() => new EthersProvider(Constants.NETWORK_MAINNET)).to.not.throw();
-      // expect(() => new EthersProvider(Constants.NETWORK_TESTNET)).to.throw();
+      await expect(getProviders('mainnet')).to.eventually.be.fulfilled;
+      await expect(getProviders('testnet')).to.eventually.be.fulfilled;
+      await expect(getProviders('homestead')).to.eventually.be.fulfilled;
+      await expect(getProviders('ropsten')).to.eventually.be.fulfilled;
+      await expect(getProviders('rinkeby')).to.eventually.be.fulfilled;
+      await expect(getProviders('kovan')).to.eventually.be.fulfilled;
+      await expect(getProviders('goerli')).to.eventually.be.fulfilled;
+
+      await expect(getProviders('othernet')).to.eventually.be.rejectedWith('invalid network');
     });
   });
 
-  // describe('#getBalance()', function () {
-  //   it('should get the address balance', async function () {
-  //     const provider = await getProvider(Constants.NETWORK_MAINNET);
+  describe('#getBalance()', function () {
+    it('should get the address balance', async function () {
+      const { provider, etherscanProvider } = await getProviders(Constants.NETWORK_MAINNET);
 
-  //     const balance = await provider.getBalance(ADDRESS);
-  //     expect(balance.value).to.equal(1334623579);
-  //   });
-  // });
+      const mock = sinon.stub(etherscanProvider, 'getBalance').withArgs(ADDRESS).returns(Promise.resolve(ethers.BigNumber.from('749043623802978142818')));
+
+      const balance = await provider.getBalance(ADDRESS);
+      sinon.assert.calledOnce(mock);
+      expect(balance).to.eql({
+        value: '749043623802978142818',
+      });
+    });
+  });
 
   describe('#getTransaction()', function () {
     it('should get the transaction information', async function () {
-      const provider = await getProvider(Constants.NETWORK_MAINNET);
+      const txHash = '0x65d61b2359c91988a9002aa0cc317b999044b0d3b6c97b375888c69dc6bd26c1';
+      const { provider, etherscanProvider } = await getProviders(Constants.NETWORK_MAINNET);
 
-      const transaction = await provider.getTransaction('0xf826ae2fdf19f3dd17eb59b430c671af4eaeab0c2633d4f147c2788a30b6109c');
-      expect(transaction.hash).to.equal('aaec2d6567bcabf1c0a827177b92bf40ed00e5bde0b11dd75d1b9b6ba0048d12');
-      expect(transaction.hex).to.equal('010000000153c79a67efd273e211d281eeb33d6a1948bf829a50ab98bc84047d6d5aeff979000000008a4730440220485f6389729dbe827c222b48c9ce27deee1d99cce005a37742df1678374383e60220196b06f5c0f356af4b4e3cf6d0a6e145161b3534b0b2e8175f11a5e231fca3c9014104a5fb9ade88da74fc9e0b68185633f25e0fd928888c022271c1bea53e0cfe529eec278ad8b5318446659f19bbc84ce2cb3d8c9c837312b4d1c9e18873ce6bca8cffffffff02a0860100000000001976a91473b888f254656b78dc6ededf2cb58e26249129f188ac806d0d00000000001976a91484d6f1f013bbcc3106e31609a6ea04b9a005c69688ac00000000');
+      const mock = sinon.stub(etherscanProvider, 'getTransaction').withArgs(txHash).returns(Promise.resolve({
+        hash: txHash,
+        type: 0,
+        blockHash: '0xcce8b7e77feb3f64d64771febdb7b6e07c9a82d9c82d00a946a0158c5675934d',
+        blockNumber: 2107971,
+        transactionIndex: 0,
+        confirmations: 12008100,
+        from: '0x1151314c646Ce4E0eFD76d1aF4760aE66a9Fe30F',
+        gasPrice: ethers.BigNumber.from('20000000000'),
+        gasLimit: ethers.BigNumber.from('90000'),
+        to: '0xc9b83ab54C84AAC4445B56a63033dB3D5B017764',
+        value: ethers.BigNumber.from('2400000000000000000000'),
+        nonce: 1559,
+        data: '0x',
+        r: '0x766d7410ba73887d0f09d1dd9944473a1b7b8b11c15eeea37a480dc81a49e71d',
+        s: '0x5ec2827ebe8907bd77f2269474d25b607f4ded70a0b83c56e058632493af8187',
+        v: 27,
+        chainId: 0,
+        wait: () => Promise.resolve({
+          to: '0xc9b83ab54C84AAC4445B56a63033dB3D5B017764',
+          from: '0x1151314c646Ce4E0eFD76d1aF4760aE66a9Fe30F',
+          contractAddress: 'null',
+          transactionIndex: 0,
+          root: '0x33588618493a22408942baa982c1681f2421cf78f3dd10cc93f0059ef5fdc402',
+          gasUsed: ethers.BigNumber.from('21000'),
+          logsBloom: '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+          blockHash: '0xcce8b7e77feb3f64d64771febdb7b6e07c9a82d9c82d00a946a0158c5675934d',
+          transactionHash: txHash,
+          logs: [],
+          blockNumber: 2107971,
+          confirmations: 12008100,
+          cumulativeGasUsed: ethers.BigNumber.from('21000'),
+          effectiveGasPrice: ethers.BigNumber.from('20000000000'),
+          type: 0,
+          byzantium: true,
+        }),
+      }));
+
+      const transaction = await provider.getTransaction(txHash);
+      sinon.assert.calledOnce(mock);
+      expect(transaction).to.eql({
+        hash: txHash,
+        raw: '0xf8708206178504a817c80083015f9094c9b83ab54c84aac4445b56a63033db3d5b01776489821ab0d44149800000801ba0766d7410ba73887d0f09d1dd9944473a1b7b8b11c15eeea37a480dc81a49e71da05ec2827ebe8907bd77f2269474d25b607f4ded70a0b83c56e058632493af8187',
+      });
     });
   });
-
-  // describe('#listUnspent()', function () {
-  //   it('should list the address\' unpent transactions', async function () {
-  //     const provider = await getProvider(Constants.NETWORK_MAINNET);
-
-  //     const utxos = await provider.listUnspent(ADDRESS);
-  //     expect(utxos).to.have.lengthOf(360);
-
-  //     const firstUtxo = utxos[0];
-  //     expect(firstUtxo.hash).to.equal('aaec2d6567bcabf1c0a827177b92bf40ed00e5bde0b11dd75d1b9b6ba0048d12');
-  //     expect(firstUtxo.vout).to.equal(0);
-  //     expect(firstUtxo.value).to.equal(100000);
-  //   });
-  // });
 });

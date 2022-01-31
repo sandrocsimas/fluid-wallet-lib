@@ -64,7 +64,7 @@ export default abstract class BTCBasedWallet extends BaseWallet {
         };
       } else {
         const tx = await this.getProvider().getTransaction(input.hash);
-        psbtInput.nonWitnessUtxo = Buffer.from(tx.hex, 'hex');
+        psbtInput.nonWitnessUtxo = Buffer.from(tx.raw, 'hex');
       }
       psbt.addInput(psbtInput);
     }));
@@ -82,7 +82,7 @@ export default abstract class BTCBasedWallet extends BaseWallet {
     const tx = psbt.extractTransaction();
     return this.getProvider().broadcastTransaction({
       hash: tx.getId(),
-      hex: tx.toHex(),
+      raw: tx.toHex(),
     });
   }
 
