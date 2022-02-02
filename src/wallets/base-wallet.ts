@@ -1,5 +1,6 @@
 import Wallet from '../models/wallet';
 import WalletConfig from '../models/wallet-config';
+import WalletSummary from '../models/wallet-summary';
 import { Transaction } from '../models/transaction';
 
 import BaseProvider from '../providers/base-provider';
@@ -16,6 +17,14 @@ export default abstract class BaseWallet {
   public abstract createWallet(addressFormat?: string): Promise<Wallet>;
 
   public abstract importWallet(mnemonic: string, addressFormat?: string): Promise<Wallet>;
+
+  public async getWallet(address: string): Promise<WalletSummary> {
+    const balance = await this.getProvider().getBalance(address);
+    return {
+      address,
+      balance: balance.value,
+    };
+  }
 
   public abstract send(privateKey: string, fromAddress: string, toAddess: string, changeAddress: string | undefined, amount: string): Promise<Transaction>;
 
