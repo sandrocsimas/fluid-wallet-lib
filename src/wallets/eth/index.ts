@@ -15,13 +15,13 @@ export default class ETHWallet extends BaseWallet {
   public async createWallet(addressFormat = 'default'): Promise<Wallet> {
     const derivationPath = this.getDerivationPath(addressFormat);
     const wallet = ethers.Wallet.createRandom({ path: derivationPath });
-    return this.getWalletDetails(wallet, addressFormat);
+    return this.getWalletDetails(wallet, addressFormat, derivationPath);
   }
 
   public async importWallet(mnemonic: string, addressFormat = 'default'): Promise<Wallet> {
     const derivationPath = this.getDerivationPath(addressFormat);
     const wallet = ethers.Wallet.fromMnemonic(mnemonic, derivationPath, this.mnemonicWords);
-    return this.getWalletDetails(wallet, addressFormat);
+    return this.getWalletDetails(wallet, addressFormat, derivationPath);
   }
 
   public async send(privateKey: string, fromAddress: string, toAddess: string, changeAddress: string | undefined, amount: string): Promise<Transaction> {
@@ -48,10 +48,11 @@ export default class ETHWallet extends BaseWallet {
     return addressFormatConfig.derivationPath;
   }
 
-  private getWalletDetails(wallet: ethers.Wallet, addressFormat: string): Wallet {
+  private getWalletDetails(wallet: ethers.Wallet, addressFormat: string, derivationPath: string): Wallet {
     return {
       address: wallet.address,
       address_format: addressFormat,
+      derivation_path: derivationPath,
       mnemonic: wallet.mnemonic.phrase,
       public_key: wallet.publicKey,
       private_key: wallet.privateKey,

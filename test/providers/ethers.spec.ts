@@ -1,6 +1,7 @@
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import sinon from 'sinon';
+import sinonChai from 'sinon-chai';
 import { ethers } from 'ethers';
 
 import Constants from '../constants';
@@ -9,6 +10,7 @@ import BaseProvider from '../../src/providers/base-provider';
 import EthersProvider from '../../src/providers/ethers';
 
 chai.use(chaiAsPromised);
+chai.use(sinonChai);
 
 const ADDRESS = '0xEA674fdDe714fd979de3EdF0F56AA9716B898ec8';
 
@@ -46,7 +48,7 @@ describe('EthersProvider', function () {
       const mock = sinon.stub(etherscanProvider, 'getBalance').withArgs(ADDRESS).returns(Promise.resolve(ethers.BigNumber.from('749043623802978142818')));
 
       const balance = await provider.getBalance(ADDRESS);
-      sinon.assert.calledOnce(mock);
+      expect(mock).to.be.calledOnce;
       expect(balance).to.eql({
         value: '749043623802978142818',
       });
@@ -97,7 +99,7 @@ describe('EthersProvider', function () {
       }));
 
       const transaction = await provider.getTransaction(txHash);
-      sinon.assert.calledOnce(mock);
+      expect(mock).to.be.calledOnce;
       expect(transaction).to.eql({
         hash: txHash,
         raw: '0xf8708206178504a817c80083015f9094c9b83ab54c84aac4445b56a63033db3d5b01776489821ab0d44149800000801ba0766d7410ba73887d0f09d1dd9944473a1b7b8b11c15eeea37a480dc81a49e71da05ec2827ebe8907bd77f2269474d25b607f4ded70a0b83c56e058632493af8187',

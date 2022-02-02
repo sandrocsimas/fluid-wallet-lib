@@ -137,11 +137,13 @@ export default abstract class BTCBasedWallet extends BaseWallet {
   private async getWalletDetails(mnemonic: string, addressFormat = 'p2wpkh'): Promise<Wallet> {
     const seed = await bip39.mnemonicToSeed(mnemonic);
     const root = this.bip32Factory.fromSeed(seed, this.getNetwork());
-    const node = root.derivePath(this.getDerivationPath(addressFormat));
+    const derivationPath = this.getDerivationPath(addressFormat);
+    const node = root.derivePath(derivationPath);
     const address = this.getScriptPubKey(node.publicKey, addressFormat).address!;
     return {
       address,
       address_format: addressFormat,
+      derivation_path: derivationPath,
       mnemonic,
       seed: seed.toString('hex'),
       public_key: node.publicKey.toString('hex'),

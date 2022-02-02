@@ -1,6 +1,7 @@
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import sinon from 'sinon';
+import sinonChai from 'sinon-chai';
 import axios from 'axios';
 
 import Constants from '../constants';
@@ -9,6 +10,7 @@ import BaseProvider from '../../src/providers/base-provider';
 import BlockchainInfoProvider from '../../src/providers/blockchain-info';
 
 chai.use(chaiAsPromised);
+chai.use(sinonChai);
 
 const ADDRESS = '1BYsmmrrfTQ1qm7KcrSLxnX7SaKQREPYFP';
 
@@ -50,7 +52,7 @@ describe('BlockchainInfoProvider', function () {
       const provider = await getProvider(Constants.SYMBOL_BTC, Constants.NETWORK_MAINNET);
 
       const balance = await provider.getBalance(ADDRESS);
-      sinon.assert.calledOnce(mock);
+      expect(mock).to.be.calledOnce;
       expect(balance).to.eql({
         value: '1334623579',
       });
@@ -70,7 +72,7 @@ describe('BlockchainInfoProvider', function () {
       const provider = await getProvider(Constants.SYMBOL_BTC, Constants.NETWORK_MAINNET);
 
       const transaction = await provider.getTransaction(txHash);
-      sinon.assert.calledOnce(mock);
+      expect(mock).to.be.calledOnce;
       expect(transaction).to.eql({
         hash: txHash,
         raw: txHex,
@@ -112,7 +114,7 @@ describe('BlockchainInfoProvider', function () {
       const provider = await getProvider(Constants.SYMBOL_BTC, Constants.NETWORK_MAINNET);
 
       const utxos = await provider.listUnspent(ADDRESS);
-      sinon.assert.calledOnce(mock);
+      expect(mock).to.be.calledOnce;
       expect(utxos).to.have.lengthOf(2);
       expect(utxos[0]).to.eql({
         hash: '748a8182cb29a60f1ef207024ecf4354ff4403a5e7d74bee24b92499fa1728ea',
@@ -139,7 +141,7 @@ describe('BlockchainInfoProvider', function () {
       const provider = await getProvider(Constants.SYMBOL_BTC, Constants.NETWORK_MAINNET);
 
       const transaction = await provider.broadcastTransaction({ hash: txHash, raw: txHex });
-      sinon.assert.calledOnce(mock);
+      expect(mock).to.be.calledOnce;
       expect(transaction).to.eql({
         hash: txHash,
         raw: txHex,
