@@ -1,13 +1,22 @@
 import chai, { expect } from 'chai';
 import chaiString from 'chai-string';
+import sinon from 'sinon';
+import sinonChai from 'sinon-chai';
+
+import BlockchainInfoProvider from '../../src/providers/blockchain-info';
 
 import BTCWallet from '../../src/wallets/btc';
 
 import Constants from '../constants';
 
 chai.use(chaiString);
+chai.use(sinonChai);
 
 describe('BTCWallet', function () {
+  afterEach(function () {
+    sinon.restore();
+  });
+
   describe('#createWallet()', function () {
     it('should create a native segwit address by default', async function () {
       const wallet = await new BTCWallet(Constants.NETWORK_TESTNET).createWallet();
@@ -59,6 +68,24 @@ describe('BTCWallet', function () {
       expect(wallet.seed).to.equal('7bb10dad42fa92ee8fdc2969737a2c5fa4cefa1492cba9d3d4dae30fc317db3ca14b9d94d39b2bea9035b5d43951b5a0719893abed068a949911702cf3eaa751');
       expect(wallet.public_key).to.equal('02346ac782b1abaa0847560cf47f8a597b255f00f738f8a1aec743f0cee02f6b14');
       expect(wallet.private_key).to.equal('cVbhyfuF3icwr8agcPB7H4WkyHoNPyKqZXoi3cFErbmRW6UrniHz');
+    });
+  });
+
+  describe('#getWalletSummary()', function () {
+    it('should get wallet summary with the address balance', async function () {
+      const address = '1BYsmmrrfTQ1qm7KcrSLxnX7SaKQREPYFP';
+      const provider = new BlockchainInfoProvider('btc', Constants.NETWORK_MAINNET);
+      const mock = sinon.stub(provider, 'getBalance').withArgs(address).returns(Promise.resolve({ value: '1334623579' }));
+
+      const btcWallet = new BTCWallet(Constants.NETWORK_MAINNET);
+      await btcWallet.connect(provider);
+
+      const walletSummary = await btcWallet.getWalletSummary(address);
+      expect(mock).to.be.calledOnce;
+      expect(walletSummary).to.eql({
+        address,
+        balance: '13.34623579',
+      });
     });
   });
 });

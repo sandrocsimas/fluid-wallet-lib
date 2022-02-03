@@ -9,6 +9,7 @@ export default class ETHWallet extends BaseWallet {
     importWallet(mnemonic: string, addressFormat?: string): Promise<Wallet>;
     send(privateKey: string, fromAddress: string, toAddess: string, changeAddress: string | undefined, amount: string): Promise<Transaction>;
     protected getWalletConfig(): WalletConfig;
+    protected convertUnit(value: string): string;
     private getDerivationPath;
     private getWalletDetails;
 }

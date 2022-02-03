@@ -1,13 +1,22 @@
 import chai, { expect } from 'chai';
 import chaiString from 'chai-string';
+import sinon from 'sinon';
+import sinonChai from 'sinon-chai';
+
+import BlockCypherProvider from '../../src/providers/blockcypher';
 
 import LTCWallet from '../../src/wallets/ltc';
 
 import Constants from '../constants';
 
 chai.use(chaiString);
+chai.use(sinonChai);
 
 describe('LTCWallet', function () {
+  afterEach(function () {
+    sinon.restore();
+  });
+
   describe('#createWallet()', function () {
     it('should create a native segwit address by default', async function () {
       const wallet = await new LTCWallet(Constants.NETWORK_TESTNET).createWallet();
@@ -59,6 +68,24 @@ describe('LTCWallet', function () {
       expect(wallet.seed).to.equal('7bb10dad42fa92ee8fdc2969737a2c5fa4cefa1492cba9d3d4dae30fc317db3ca14b9d94d39b2bea9035b5d43951b5a0719893abed068a949911702cf3eaa751');
       expect(wallet.public_key).to.equal('032ff14f3a1f8040bd5e2bce4681452d43e8d60310ce1de06ae8441006f17eff9e');
       expect(wallet.private_key).to.equal('cUmFRUe6RY4m8djjxpJYd9KoD7jVHtdLd6uLdzSmZ9FjygRu4Riv');
+    });
+  });
+
+  describe('#getWalletSummary()', function () {
+    it('should get wallet summary with the address balance', async function () {
+      const address = 'LLVXU5zFgDmV1rXbHLS5kED7HpFjJd78go';
+      const provider = new BlockCypherProvider('ltc', Constants.NETWORK_MAINNET);
+      const mock = sinon.stub(provider, 'getBalance').withArgs(address).returns(Promise.resolve({ value: '78519260592' }));
+
+      const ltcWallet = new LTCWallet(Constants.NETWORK_MAINNET);
+      await ltcWallet.connect(provider);
+
+      const walletSummary = await ltcWallet.getWalletSummary(address);
+      expect(mock).to.be.calledOnce;
+      expect(walletSummary).to.eql({
+        address,
+        balance: '785.19260592',
+      });
     });
   });
 });

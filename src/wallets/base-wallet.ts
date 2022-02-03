@@ -18,11 +18,13 @@ export default abstract class BaseWallet {
 
   public abstract importWallet(mnemonic: string, addressFormat?: string): Promise<Wallet>;
 
-  public async getWallet(address: string): Promise<WalletSummary> {
+  protected abstract convertUnit(value: string): string;
+
+  public async getWalletSummary(address: string): Promise<WalletSummary> {
     const balance = await this.getProvider().getBalance(address);
     return {
       address,
-      balance: balance.value,
+      balance: this.convertUnit(balance.value),
     };
   }
 

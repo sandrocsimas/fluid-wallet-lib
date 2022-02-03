@@ -86,6 +86,10 @@ export default abstract class BTCBasedWallet extends BaseWallet {
     });
   }
 
+  protected convertUnit(value: string): string {
+    return String(unit.toBitcoin(value));
+  }
+
   private getNetwork(): Network {
     // eslint-disable-next-line prefer-destructuring
     const network = this.getWalletConfig().networks[this.network];

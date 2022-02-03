@@ -40,6 +40,10 @@ export default class ETHWallet extends BaseWallet {
     return ethConfig;
   }
 
+  protected convertUnit(value: string): string {
+    return ethers.utils.formatEther(value);
+  }
+
   private getDerivationPath(addressFormat: string): string {
     const addressFormatConfig = ethConfig.address_formats.all[addressFormat];
     if (!addressFormatConfig) {

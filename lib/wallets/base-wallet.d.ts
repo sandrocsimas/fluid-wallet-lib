@@ -9,7 +9,8 @@ export default abstract class BaseWallet {
     constructor(network: string);
     abstract createWallet(addressFormat?: string): Promise<Wallet>;
     abstract importWallet(mnemonic: string, addressFormat?: string): Promise<Wallet>;
-    getWallet(address: string): Promise<WalletSummary>;
+    protected abstract convertUnit(value: string): string;
+    getWalletSummary(address: string): Promise<WalletSummary>;
     abstract send(privateKey: string, fromAddress: string, toAddess: string, changeAddress: string | undefined, amount: string): Promise<Transaction>;
     protected abstract getWalletConfig(): WalletConfig;
     getName(): string;
