@@ -1,1 +1,1 @@
-Cryptocurrency wallet lib
+Fluid Wallet lib
